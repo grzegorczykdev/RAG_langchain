@@ -12,19 +12,27 @@ RELEVANCE_THRESHOLD = 0.5
 TOP_K = 3
 
 PROMPT_TEMPLATE = """
-Answer the question based only on the following context:
+Jesteś asystentem dietetycznym. Odpowiedz na pytanie WYŁĄCZNIE na podstawie poniższego kontekstu
+z oficjalnych dokumentów (wytyczne żywieniowe, suplementacja).
 
+Zasady:
+- Odpowiadaj zawsze po polsku.
+- Używaj jasnego, profesjonalnego języka zrozumiałego dla użytkownika.
+- Jeśli kontekst nie zawiera odpowiedzi, napisz, że w dostępnych materiałach brak takich informacji.
+- Nie wymyślaj faktów spoza kontekstu.
+
+Kontekst:
 {context}
 
 ---
 
-Question: {question}
+Pytanie: {question}
 """
 
 
 def _format_source(source: str | None) -> str:
     if not source:
-        return "Unknown"
+        return "Nieznane źródło"
     return os.path.basename(source)
 
 
@@ -33,18 +41,18 @@ def query_documents(
     *,
     gemini_api_key: str | None = None,
 ) -> dict[str, list[str] | str]:
-    """Run RAG query and return answer with source filenames."""
+    """Wykonuje zapytanie RAG i zwraca odpowiedź oraz listę plików źródłowych."""
     question = question.strip()
     if not question:
         return {
-            "answer": "Please provide a question.",
+            "answer": "Podaj pytanie, aby uzyskać odpowiedź.",
             "sources": [],
         }
 
     api_key = gemini_api_key or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return {
-            "answer": "No Gemini API key provided.",
+            "answer": "Brak klucza API Gemini. Ustaw klucz w ustawieniach aplikacji.",
             "sources": [],
         }
 
@@ -58,7 +66,10 @@ def query_documents(
 
     if len(results) == 0 or results[0][1] < RELEVANCE_THRESHOLD:
         return {
-            "answer": "Could not find matching information in your documents.",
+            "answer": (
+                "Nie znaleziono w dokumentach informacji pasujących do Twojego pytania. "
+                "Spróbuj sformułować je inaczej lub sprawdź, czy baza wiedzy została zindeksowana."
+            ),
             "sources": [],
         }
 
@@ -87,19 +98,20 @@ def query_documents(
 def main():
     if len(sys.argv) < 2:
         print(
-            "Error: You must provide a question. Example: python query_data.py 'Your question here'"
+            "Błąd: podaj pytanie jako argument. "
+            "Przykład: python query_data.py \"Jakie są normy białka?\""
         )
         return
 
     result = query_documents(sys.argv[1])
 
-    print("\n=== AI RESPONSE ===")
+    print("\n=== ODPOWIEDŹ AI ===")
     print(result["answer"])
-    print("\n=== SOURCES ===")
+    print("\n=== ŹRÓDŁA ===")
     if result["sources"]:
-        print(f"Information found in: {', '.join(result['sources'])}\n")
+        print(f"Informacje znalezione w: {', '.join(result['sources'])}\n")
     else:
-        print("No sources found.\n")
+        print("Brak dopasowanych źródeł.\n")
 
 
 if __name__ == "__main__":

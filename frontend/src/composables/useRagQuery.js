@@ -2,6 +2,17 @@ import { ref } from "vue";
 import { apiUrl, isApiBaseConfigured } from "../config/api.js";
 import { getGeminiApiKey } from "./useGeminiApiKey.js";
 
+function toPolishError(message) {
+  if (!message) return "Coś poszło nie tak. Spróbuj ponownie.";
+  if (message === "Failed to fetch" || /network/i.test(message)) {
+    return "Brak połączenia z serwerem. Sprawdź, czy API jest uruchomione.";
+  }
+  if (message === "Sprawdzanie stanu nie powiodło się") {
+    return "Nie udało się sprawdzić stanu API.";
+  }
+  return message;
+}
+
 export function useRagQuery() {
   const loading = ref(false);
   const error = ref(null);
@@ -24,9 +35,9 @@ export function useRagQuery() {
       const data = await res.json();
       apiStatus.value = data.status === "ok" ? "connected" : "degraded";
       statusMessage.value = data.message;
-    } catch {
+    } catch (err) {
       apiStatus.value = "offline";
-      statusMessage.value = "API niedostępne — uruchom serwer FastAPI";
+      statusMessage.value = toPolishError(err.message) || "API niedostępne — uruchom serwer FastAPI";
     }
   }
 
@@ -63,20 +74,28 @@ export function useRagQuery() {
 
       if (!res.ok) {
         const detail = data.detail;
-        const message =
+        let message =
           typeof detail === "string"
             ? detail
             : Array.isArray(detail)
               ? detail.map((d) => d.msg || d).join(", ")
-              : `Żądanie nie powiodło się (${res.status})`;
+              : `Żądanie nie powiodło się (kod ${res.status})`;
+
+        if (res.status === 401) {
+          message = "Brak lub nieprawidłowy klucz API Gemini.";
+        } else if (res.status === 422) {
+          message = "Nieprawidłowe pytanie — wpisz od 1 do 4000 znaków.";
+        } else if (res.status >= 500 && !message.startsWith("Nie udało się")) {
+          message = `Błąd serwera: ${message}`;
+        }
+
         throw new Error(message);
       }
 
       answer.value = data.answer ?? "";
       sources.value = Array.isArray(data.sources) ? data.sources : [];
     } catch (err) {
-      error.value =
-        err.message || "Coś poszło nie tak. Spróbuj ponownie.";
+      error.value = toPolishError(err.message);
     } finally {
       loading.value = false;
     }

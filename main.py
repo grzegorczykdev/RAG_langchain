@@ -1,19 +1,21 @@
 import os
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from query_data import query_documents
 
 app = FastAPI(
-    title="DocuMind AI API",
-    description="RAG API powered by Gemini and Chroma",
+    title="NutriMind AI — API",
+    description="API RAG do wytycznych żywieniowych i suplementacji (Gemini + Chroma)",
     version="1.0.0",
 )
 
-# Allow any origin (e.g. Netlify) to call this API from the browser.
-# Credentials must be False when using a wildcard origin.
+# Zezwól na żądania z dowolnej domeny (np. Netlify).
+# Przy origin "*" credentials musi być False.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,7 +26,12 @@ app.add_middleware(
 
 
 class QueryRequest(BaseModel):
-    question: str = Field(..., min_length=1, max_length=4000)
+    question: str = Field(
+        ...,
+        min_length=1,
+        max_length=4000,
+        description="Pytanie użytkownika dotyczące żywienia lub suplementacji",
+    )
 
 
 class QueryResponse(BaseModel):
@@ -37,14 +44,31 @@ class HealthResponse(BaseModel):
     message: str
 
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    _request: Request, _exc: RequestValidationError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": (
+                "Nieprawidłowe żądanie. Pole „question” jest wymagane "
+                "(od 1 do 4000 znaków)."
+            )
+        },
+    )
+
+
 @app.get("/api/health", response_model=HealthResponse)
 def health_check():
     chroma_ready = os.path.isdir("chroma")
     return HealthResponse(
         status="ok" if chroma_ready else "degraded",
-        message="Connected to Gemini Database"
-        if chroma_ready
-        else "Chroma database not found — run creating_database.py first",
+        message=(
+            "Połączono z bazą wiedzy Chroma"
+            if chroma_ready
+            else "Baza Chroma nie istnieje — uruchom najpierw creating_database.py"
+        ),
     )
 
 
@@ -53,11 +77,11 @@ def query(
     request: QueryRequest,
     x_gemini_api_key: str | None = Header(default=None, alias="X-Gemini-API-Key"),
 ):
-    """Run a RAG query. The client must supply a Gemini API key in X-Gemini-API-Key."""
+    """Zapytanie RAG — klient musi przesłać klucz Gemini w nagłówku X-Gemini-API-Key."""
     if not x_gemini_api_key or not x_gemini_api_key.strip():
         raise HTTPException(
             status_code=401,
-            detail="Missing or empty X-Gemini-API-Key header",
+            detail="Brak nagłówka X-Gemini-API-Key lub jest pusty",
         )
 
     try:
@@ -69,7 +93,7 @@ def query(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to process query: {exc}",
+            detail=f"Nie udało się przetworzyć zapytania: {exc}",
         ) from exc
 
 

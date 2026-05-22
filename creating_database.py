@@ -20,7 +20,7 @@ def main():
         shutil.rmtree(CHROMA_PATH)
 
     # 2. Wczytujemy wszystkie pliki tekstowe z folderu 'data'
-    print("Loading PDF documents...")
+    print("Wczytywanie dokumentów PDF...")
     loader = DirectoryLoader(DATA_PATH, glob="*.pdf", loader_cls=PyPDFLoader)
     documents = loader.load()
 

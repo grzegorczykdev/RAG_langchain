@@ -98,7 +98,7 @@ async function handleSubmit(question) {
     <footer class="relative border-t border-surface-200/80 bg-white/60 px-4 py-8 backdrop-blur-sm">
       <div class="mx-auto max-w-4xl text-center">
         <p class="text-xs font-medium text-surface-600">
-          NutriMind AI · Vue 3 + FastAPI + Gemini RAG
+          NutriMind AI · asystent żywienia oparty na sztucznej inteligencji
         </p>
         <p class="mt-1 text-[11px] text-surface-500">
           Informacje mają charakter edukacyjny — nie zastępują konsultacji z dietetykiem
