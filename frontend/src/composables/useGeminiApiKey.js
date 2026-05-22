@@ -1,6 +1,7 @@
 import { ref } from "vue";
 
 const STORAGE_KEY = "documind_gemini_api_key";
+const SAVE_FEEDBACK_MS = 2000;
 
 export function getGeminiApiKey() {
   try {
@@ -30,7 +31,7 @@ export function useGeminiApiKey() {
     justSaved.value = true;
     window.setTimeout(() => {
       justSaved.value = false;
-    }, 2000);
+    }, SAVE_FEEDBACK_MS);
   }
 
   return { apiKey, justSaved, loadFromStorage, save };

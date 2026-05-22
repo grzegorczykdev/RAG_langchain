@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from constants import CHROMA_PATH, GEMINI_API_KEY_HEADER
 from query_data import query_documents
 
 app = FastAPI(
@@ -14,14 +15,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Zezwól na żądania z dowolnej domeny (np. Netlify).
-# Przy origin "*" credentials musi być False.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+VALIDATION_ERROR_DETAIL = (
+    "Nieprawidłowe żądanie. Pole „question” jest wymagane (od 1 do 4000 znaków)."
 )
 
 
@@ -46,22 +49,15 @@ class HealthResponse(BaseModel):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
-    _request: Request, _exc: RequestValidationError
+    _request: Request,
+    _exc: RequestValidationError,
 ) -> JSONResponse:
-    return JSONResponse(
-        status_code=422,
-        content={
-            "detail": (
-                "Nieprawidłowe żądanie. Pole „question” jest wymagane "
-                "(od 1 do 4000 znaków)."
-            )
-        },
-    )
+    return JSONResponse(status_code=422, content={"detail": VALIDATION_ERROR_DETAIL})
 
 
 @app.get("/api/health", response_model=HealthResponse)
-def health_check():
-    chroma_ready = os.path.isdir("chroma")
+def health_check() -> HealthResponse:
+    chroma_ready = os.path.isdir(CHROMA_PATH)
     return HealthResponse(
         status="ok" if chroma_ready else "degraded",
         message=(
@@ -72,24 +68,28 @@ def health_check():
     )
 
 
-@app.post("/api/query", response_model=QueryResponse)
-def query(
-    request: QueryRequest,
-    x_gemini_api_key: str | None = Header(default=None, alias="X-Gemini-API-Key"),
-):
-    """Zapytanie RAG — klient musi przesłać klucz Gemini w nagłówku X-Gemini-API-Key."""
-    if not x_gemini_api_key or not x_gemini_api_key.strip():
+def _require_gemini_api_key(header_value: str | None) -> str:
+    key = (header_value or "").strip()
+    if not key:
         raise HTTPException(
             status_code=401,
             detail="Brak nagłówka X-Gemini-API-Key lub jest pusty",
         )
+    return key
+
+
+@app.post("/api/query", response_model=QueryResponse)
+def query(
+    request: QueryRequest,
+    x_gemini_api_key: str | None = Header(default=None, alias=GEMINI_API_KEY_HEADER),
+) -> QueryResponse:
+    api_key = _require_gemini_api_key(x_gemini_api_key)
 
     try:
-        result = query_documents(
-            request.question,
-            gemini_api_key=x_gemini_api_key.strip(),
-        )
+        result = query_documents(request.question, gemini_api_key=api_key)
         return QueryResponse(**result)
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(
             status_code=500,

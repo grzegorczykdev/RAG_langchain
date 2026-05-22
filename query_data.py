@@ -1,15 +1,21 @@
 import os
 import sys
+from typing import TypedDict
+
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
-load_dotenv()
+from constants import (
+    CHROMA_PATH,
+    GEMINI_CHAT_MODEL,
+    GEMINI_EMBEDDING_MODEL,
+    RELEVANCE_THRESHOLD,
+    TOP_K,
+)
 
-CHROMA_PATH = "chroma"
-RELEVANCE_THRESHOLD = 0.5
-TOP_K = 3
+load_dotenv()
 
 PROMPT_TEMPLATE = """
 Jesteś asystentem dietetycznym. Odpowiedz na pytanie WYŁĄCZNIE na podstawie poniższego kontekstu
@@ -29,6 +35,24 @@ Kontekst:
 Pytanie: {question}
 """
 
+CHAT_PROMPT = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+
+MSG_EMPTY_QUESTION = "Podaj pytanie, aby uzyskać odpowiedź."
+MSG_MISSING_API_KEY = "Brak klucza API Gemini. Ustaw klucz w ustawieniach aplikacji."
+MSG_NO_MATCH = (
+    "Nie znaleziono w dokumentach informacji pasujących do Twojego pytania. "
+    "Spróbuj sformułować je inaczej lub sprawdź, czy baza wiedzy została zindeksowana."
+)
+
+
+class QueryResult(TypedDict):
+    answer: str
+    sources: list[str]
+
+
+def _result(answer: str, sources: list[str] | None = None) -> QueryResult:
+    return {"answer": answer, "sources": sources or []}
+
 
 def _format_source(source: str | None) -> str:
     if not source:
@@ -36,66 +60,55 @@ def _format_source(source: str | None) -> str:
     return os.path.basename(source)
 
 
+def _resolve_api_key(gemini_api_key: str | None) -> str | None:
+    key = (gemini_api_key or os.environ.get("GEMINI_API_KEY") or "").strip()
+    return key or None
+
+
+def _extract_content(response: object) -> str:
+    content = getattr(response, "content", None)
+    return content if isinstance(content, str) else str(response)
+
+
 def query_documents(
     question: str,
     *,
     gemini_api_key: str | None = None,
-) -> dict[str, list[str] | str]:
+) -> QueryResult:
     """Wykonuje zapytanie RAG i zwraca odpowiedź oraz listę plików źródłowych."""
     question = question.strip()
     if not question:
-        return {
-            "answer": "Podaj pytanie, aby uzyskać odpowiedź.",
-            "sources": [],
-        }
+        return _result(MSG_EMPTY_QUESTION)
 
-    api_key = gemini_api_key or os.environ.get("GEMINI_API_KEY")
+    api_key = _resolve_api_key(gemini_api_key)
     if not api_key:
-        return {
-            "answer": "Brak klucza API Gemini. Ustaw klucz w ustawieniach aplikacji.",
-            "sources": [],
-        }
+        return _result(MSG_MISSING_API_KEY)
 
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="gemini-embedding-001",
+        model=GEMINI_EMBEDDING_MODEL,
         google_api_key=api_key,
     )
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
-
     results = db.similarity_search_with_relevance_scores(question, k=TOP_K)
 
-    if len(results) == 0 or results[0][1] < RELEVANCE_THRESHOLD:
-        return {
-            "answer": (
-                "Nie znaleziono w dokumentach informacji pasujących do Twojego pytania. "
-                "Spróbuj sformułować je inaczej lub sprawdź, czy baza wiedzy została zindeksowana."
-            ),
-            "sources": [],
-        }
+    if not results or results[0][1] < RELEVANCE_THRESHOLD:
+        return _result(MSG_NO_MATCH)
 
-    context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-
-    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    prompt = prompt_template.format(context=context_text, question=question)
+    context_text = "\n\n---\n\n".join(doc.page_content for doc, _ in results)
+    prompt = CHAT_PROMPT.format(context=context_text, question=question)
 
     model = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model=GEMINI_CHAT_MODEL,
         google_api_key=api_key,
     )
-    response = model.invoke(prompt)
-    response_text = response.content if hasattr(response, "content") else str(response)
+    response_text = _extract_content(model.invoke(prompt))
 
-    sources = sorted(
-        {_format_source(doc.metadata.get("source")) for doc, _score in results}
-    )
+    sources = sorted({_format_source(doc.metadata.get("source")) for doc, _ in results})
 
-    return {
-        "answer": response_text,
-        "sources": sources,
-    }
+    return _result(response_text, sources)
 
 
-def main():
+def main() -> None:
     if len(sys.argv) < 2:
         print(
             "Błąd: podaj pytanie jako argument. "

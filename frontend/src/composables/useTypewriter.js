@@ -35,10 +35,10 @@ export function useTypewriter(sourceText, options = {}) {
   watch(
     () => sourceText.value,
     (text) => startTyping(text ?? ""),
-    { immediate: true }
+    { immediate: true },
   );
 
   onUnmounted(clearTimer);
 
-  return { displayText, restart: () => startTyping(sourceText.value ?? "") };
+  return { displayText };
 }

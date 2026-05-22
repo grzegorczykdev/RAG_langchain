@@ -5,21 +5,18 @@ const topics = [
   {
     icon: Apple,
     label: "Wytyczne żywieniowe",
-    description: "Normy i zalecenia dla populacji",
     style: "border-primary-200 bg-primary-50 text-primary-800",
     iconStyle: "bg-primary-100 text-primary-600",
   },
   {
     icon: Pill,
     label: "Suplementacja",
-    description: "Dane o preparatach i dawkowaniu",
     style: "border-accent-200 bg-accent-50 text-accent-800",
     iconStyle: "bg-accent-100 text-accent-600",
   },
   {
     icon: ShieldCheck,
     label: "Źródła naukowe",
-    description: "Odpowiedzi z cytowanymi dokumentami",
     style: "border-trust-200 bg-trust-50 text-trust-800",
     iconStyle: "bg-trust-100 text-trust-600",
   },
