@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { Send, Loader2 } from "lucide-vue-next";
+import { Send, Loader2, MessageCircle } from "lucide-vue-next";
 
 defineProps({
   loading: { type: Boolean, default: false },
@@ -26,35 +26,46 @@ function onKeydown(event) {
 </script>
 
 <template>
-  <section class="glass-panel mx-auto w-full max-w-3xl p-6 shadow-glow-sm animate-fade-in">
-    <label for="question" class="mb-3 block text-sm font-medium text-slate-400">
-      Twoje pytanie
-    </label>
+  <section class="health-card health-card-hover mx-auto w-full max-w-3xl animate-fade-in">
+    <div class="mb-4 flex items-center gap-3">
+      <div class="icon-badge-trust h-10 w-10 rounded-card">
+        <MessageCircle class="h-5 w-5" aria-hidden="true" />
+      </div>
+      <div>
+        <label for="question" class="block font-display text-base font-semibold text-surface-900">
+          Twoje pytanie
+        </label>
+        <p class="text-xs text-surface-500">Zapytaj o normy, produkty lub suplementację</p>
+      </div>
+    </div>
+
     <textarea
       id="question"
       v-model="question"
       rows="3"
-      class="glass-input min-h-[120px]"
-      placeholder="np. Co dzieje się, gdy Dorota spotyka Czarnoksiężnika?"
+      class="health-input min-h-[120px]"
+      placeholder="np. Jakie są zalecane dzienne normy białka według wytycznych żywieniowych?"
       :disabled="loading || disabled"
       @keydown="onKeydown"
     />
 
-    <div class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-xs text-slate-500">
-        <kbd class="rounded bg-surface-800 px-1.5 py-0.5">Enter</kbd> — wyślij,
-        <kbd class="rounded bg-surface-800 px-1.5 py-0.5">Shift+Enter</kbd> — nowa linia
+    <div
+      class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p class="text-xs text-surface-500">
+        <kbd class="kbd-hint">Enter</kbd> — wyślij,
+        <kbd class="kbd-hint">Shift+Enter</kbd> — nowa linia
       </p>
 
       <button
         type="button"
-        class="btn-glow shrink-0"
+        class="btn-primary shrink-0"
         :disabled="loading || disabled || !question.trim()"
         @click="handleSubmit"
       >
         <Loader2 v-if="loading" class="h-5 w-5 animate-spin" aria-hidden="true" />
         <Send v-else class="h-5 w-5" aria-hidden="true" />
-        {{ loading ? "Myślę…" : "Zapytaj AI" }}
+        {{ loading ? "Analizuję…" : "Zapytaj eksperta" }}
       </button>
     </div>
   </section>

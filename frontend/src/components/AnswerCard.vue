@@ -1,7 +1,7 @@
 <script setup>
 import { computed, toRef } from "vue";
 import { marked } from "marked";
-import { Bot } from "lucide-vue-next";
+import { Salad } from "lucide-vue-next";
 import SourcesBadges from "./SourcesBadges.vue";
 import { useTypewriter } from "../composables/useTypewriter.js";
 
@@ -25,25 +25,24 @@ const renderedHtml = computed(() => {
 
 <template>
   <section
-    class="glass-panel mx-auto w-full max-w-3xl p-6 shadow-glow animate-fade-in"
+    class="health-card mx-auto w-full max-w-3xl animate-fade-in border-primary-100"
     aria-live="polite"
   >
-    <div class="mb-4 flex items-center gap-3">
-      <div
-        class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/30 to-violet-600/30 text-accent-glow"
-      >
-        <Bot class="h-5 w-5" aria-hidden="true" />
+    <div class="mb-5 flex items-center gap-3 border-b border-surface-100 pb-4">
+      <div class="icon-badge h-10 w-10 rounded-card">
+        <Salad class="h-5 w-5" aria-hidden="true" />
       </div>
       <div>
-        <h2 class="font-display text-lg font-semibold text-white">Odpowiedź AI</h2>
-        <p class="text-xs text-slate-500">Wygenerowana na podstawie Twoich dokumentów</p>
+        <h2 class="font-display text-lg font-semibold text-surface-900">
+          Rekomendacja eksperta
+        </h2>
+        <p class="text-xs text-surface-500">
+          Odpowiedź oparta na zatwierdzonych materiałach źródłowych
+        </p>
       </div>
     </div>
 
-    <div
-      class="prose-answer min-h-[2rem]"
-      v-html="renderedHtml"
-    />
+    <div class="prose-answer min-h-[2rem]" v-html="renderedHtml" />
 
     <SourcesBadges :sources="sources" />
   </section>

@@ -1,44 +1,77 @@
 <script setup>
-import { MessageSquareQuote, BookOpen, Zap } from "lucide-vue-next";
+import { Apple, Pill, Scale, Sparkles } from "lucide-vue-next";
 
 const tips = [
-  "Podsumuj główną fabułę opowieści",
-  "Kim są główni bohaterowie?",
-  "Jaki jest konflikt w pierwszym rozdziale?",
+  {
+    icon: Scale,
+    text: "Jakie są zalecane normy spożycia białka dla dorosłych?",
+    accent: "primary",
+  },
+  {
+    icon: Apple,
+    text: "Podsumuj wytyczne dotyczące warzyw i owoców w diecie",
+    accent: "accent",
+  },
+  {
+    icon: Pill,
+    text: "Kiedy suplementacja witaminy D jest uzasadniona naukowo?",
+    accent: "trust",
+  },
 ];
+
+const accentMap = {
+  primary: {
+    card: "hover:border-primary-200 hover:bg-primary-50/50",
+    icon: "bg-primary-100 text-primary-600",
+  },
+  accent: {
+    card: "hover:border-accent-200 hover:bg-accent-50/50",
+    icon: "bg-accent-100 text-accent-600",
+  },
+  trust: {
+    card: "hover:border-trust-200 hover:bg-trust-50/50",
+    icon: "bg-trust-100 text-trust-600",
+  },
+};
 </script>
 
 <template>
   <section
-    class="mx-auto w-full max-w-3xl text-center animate-fade-in"
+    class="mx-auto w-full max-w-3xl animate-fade-in text-center"
     aria-label="Wprowadzenie"
   >
     <div
-      class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl glass-panel"
+      class="health-card mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-card-lg p-0 shadow-soft"
     >
-      <MessageSquareQuote class="h-8 w-8 text-accent-glow" aria-hidden="true" />
+      <Sparkles class="h-8 w-8 text-primary-600" aria-hidden="true" />
     </div>
 
-    <h2 class="font-display text-xl font-semibold text-slate-300">
-      Zapytaj o cokolwiek w swoich dokumentach
+    <h2 class="font-display text-xl font-semibold text-surface-900 sm:text-2xl">
+      Rozpocznij konsultację z bazą wiedzy
     </h2>
-    <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">
-      DocuMind wyszukuje istotne fragmenty w zindeksowanych plikach i odpowiada
-      za pomocą Gemini wyłącznie na tej podstawie.
+    <p class="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-surface-600">
+      System przeszukuje oficjalne wytyczne żywieniowe i dokumentację suplementacyjną,
+      a następnie formułuje odpowiedź wspartą źródłami.
     </p>
 
-    <div class="mt-8 grid gap-3 sm:grid-cols-3">
+    <p class="mt-8 mb-3 text-xs font-semibold uppercase tracking-wider text-surface-500">
+      Przykładowe pytania
+    </p>
+
+    <div class="grid gap-3 sm:grid-cols-3">
       <div
-        v-for="(tip, i) in tips"
-        :key="i"
-        class="glass-panel flex items-start gap-3 p-4 text-left text-sm text-slate-400"
+        v-for="tip in tips"
+        :key="tip.text"
+        class="health-card health-card-hover flex items-start gap-3 p-4 text-left text-sm text-surface-700 transition-colors"
+        :class="accentMap[tip.accent].card"
       >
-        <component
-          :is="i === 0 ? BookOpen : i === 1 ? MessageSquareQuote : Zap"
-          class="mt-0.5 h-4 w-4 shrink-0 text-indigo-400"
-          aria-hidden="true"
-        />
-        <span>{{ tip }}</span>
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-card"
+          :class="accentMap[tip.accent].icon"
+        >
+          <component :is="tip.icon" class="h-4 w-4" aria-hidden="true" />
+        </span>
+        <span class="leading-snug">{{ tip.text }}</span>
       </div>
     </div>
   </section>
