@@ -5,7 +5,7 @@ import { Bot } from "lucide-vue-next";
 <template>
   <section
     class="glass-panel mx-auto w-full max-w-3xl p-6 animate-fade-in"
-    aria-label="Loading response"
+    aria-label="Ładowanie odpowiedzi"
   >
     <div class="mb-4 flex items-center gap-3">
       <div

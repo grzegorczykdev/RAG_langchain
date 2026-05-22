@@ -28,22 +28,22 @@ function onKeydown(event) {
 <template>
   <section class="glass-panel mx-auto w-full max-w-3xl p-6 shadow-glow-sm animate-fade-in">
     <label for="question" class="mb-3 block text-sm font-medium text-slate-400">
-      Your question
+      Twoje pytanie
     </label>
     <textarea
       id="question"
       v-model="question"
       rows="3"
       class="glass-input min-h-[120px]"
-      placeholder="e.g. What happens when Dorothy meets the Wizard?"
+      placeholder="np. Co dzieje się, gdy Dorota spotyka Czarnoksiężnika?"
       :disabled="loading || disabled"
       @keydown="onKeydown"
     />
 
     <div class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-xs text-slate-500">
-        Press <kbd class="rounded bg-surface-800 px-1.5 py-0.5">Enter</kbd> to send,
-        <kbd class="rounded bg-surface-800 px-1.5 py-0.5">Shift+Enter</kbd> for new line
+        <kbd class="rounded bg-surface-800 px-1.5 py-0.5">Enter</kbd> — wyślij,
+        <kbd class="rounded bg-surface-800 px-1.5 py-0.5">Shift+Enter</kbd> — nowa linia
       </p>
 
       <button
@@ -54,7 +54,7 @@ function onKeydown(event) {
       >
         <Loader2 v-if="loading" class="h-5 w-5 animate-spin" aria-hidden="true" />
         <Send v-else class="h-5 w-5" aria-hidden="true" />
-        {{ loading ? "Thinking…" : "Ask AI" }}
+        {{ loading ? "Myślę…" : "Zapytaj AI" }}
       </button>
     </div>
   </section>

@@ -5,6 +5,7 @@ import QueryInput from "./components/QueryInput.vue";
 import AnswerCard from "./components/AnswerCard.vue";
 import LoadingSkeleton from "./components/LoadingSkeleton.vue";
 import EmptyState from "./components/EmptyState.vue";
+import SettingsModal from "./components/SettingsModal.vue";
 import { useRagQuery } from "./composables/useRagQuery.js";
 import { AlertCircle } from "lucide-vue-next";
 
@@ -33,6 +34,7 @@ async function handleSubmit(question) {
 
 <template>
   <div class="relative min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <SettingsModal />
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       <div
         class="absolute -left-32 top-20 h-64 w-64 rounded-full bg-indigo-600/10 blur-3xl"

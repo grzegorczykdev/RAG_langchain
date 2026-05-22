@@ -35,8 +35,8 @@ const renderedHtml = computed(() => {
         <Bot class="h-5 w-5" aria-hidden="true" />
       </div>
       <div>
-        <h2 class="font-display text-lg font-semibold text-white">AI Response</h2>
-        <p class="text-xs text-slate-500">Generated from your document context</p>
+        <h2 class="font-display text-lg font-semibold text-white">Odpowiedź AI</h2>
+        <p class="text-xs text-slate-500">Wygenerowana na podstawie Twoich dokumentów</p>
       </div>
     </div>
 

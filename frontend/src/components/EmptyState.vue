@@ -2,16 +2,16 @@
 import { MessageSquareQuote, BookOpen, Zap } from "lucide-vue-next";
 
 const tips = [
-  "Summarize the main plot of the story",
-  "Who are the main characters?",
-  "What is the conflict in chapter one?",
+  "Podsumuj główną fabułę opowieści",
+  "Kim są główni bohaterowie?",
+  "Jaki jest konflikt w pierwszym rozdziale?",
 ];
 </script>
 
 <template>
   <section
     class="mx-auto w-full max-w-3xl text-center animate-fade-in"
-    aria-label="Getting started"
+    aria-label="Wprowadzenie"
   >
     <div
       class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl glass-panel"
@@ -20,11 +20,11 @@ const tips = [
     </div>
 
     <h2 class="font-display text-xl font-semibold text-slate-300">
-      Ask anything about your documents
+      Zapytaj o cokolwiek w swoich dokumentach
     </h2>
     <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">
-      DocuMind retrieves relevant passages from your indexed files and answers with
-      Gemini using only that context.
+      DocuMind wyszukuje istotne fragmenty w zindeksowanych plikach i odpowiada
+      za pomocą Gemini wyłącznie na tej podstawie.
     </p>
 
     <div class="mt-8 grid gap-3 sm:grid-cols-3">

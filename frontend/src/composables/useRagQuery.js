@@ -1,4 +1,6 @@
 import { ref } from "vue";
+import { apiUrl } from "../config/api.js";
+import { getGeminiApiKey } from "./useGeminiApiKey.js";
 
 export function useRagQuery() {
   const loading = ref(false);
@@ -6,31 +8,41 @@ export function useRagQuery() {
   const answer = ref("");
   const sources = ref([]);
   const apiStatus = ref("checking");
-  const statusMessage = ref("Checking connection…");
+  const statusMessage = ref("Sprawdzanie połączenia…");
 
   async function checkHealth() {
     try {
-      const res = await fetch("/api/health");
-      if (!res.ok) throw new Error("Health check failed");
+      const res = await fetch(apiUrl("/api/health"));
+      if (!res.ok) throw new Error("Sprawdzanie stanu nie powiodło się");
       const data = await res.json();
       apiStatus.value = data.status === "ok" ? "connected" : "degraded";
       statusMessage.value = data.message;
     } catch {
       apiStatus.value = "offline";
-      statusMessage.value = "API offline — start the FastAPI server";
+      statusMessage.value = "API niedostępne — uruchom serwer FastAPI";
     }
   }
 
   async function askQuestion(question) {
+    const apiKey = getGeminiApiKey();
+    if (!apiKey) {
+      error.value =
+        "Brak klucza API Gemini. Kliknij ikonę ustawień w prawym górnym rogu i zapisz klucz.";
+      return;
+    }
+
     loading.value = true;
     error.value = null;
     answer.value = "";
     sources.value = [];
 
     try {
-      const res = await fetch("/api/query", {
+      const res = await fetch(apiUrl("/api/query"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Gemini-API-Key": apiKey,
+        },
         body: JSON.stringify({ question }),
       });
 
@@ -43,14 +55,15 @@ export function useRagQuery() {
             ? detail
             : Array.isArray(detail)
               ? detail.map((d) => d.msg || d).join(", ")
-              : `Request failed (${res.status})`;
+              : `Żądanie nie powiodło się (${res.status})`;
         throw new Error(message);
       }
 
       answer.value = data.answer ?? "";
       sources.value = Array.isArray(data.sources) ? data.sources : [];
     } catch (err) {
-      error.value = err.message || "Something went wrong. Please try again.";
+      error.value =
+        err.message || "Coś poszło nie tak. Spróbuj ponownie.";
     } finally {
       loading.value = false;
     }

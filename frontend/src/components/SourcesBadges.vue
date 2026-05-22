@@ -12,7 +12,7 @@ defineProps({
 <template>
   <div v-if="sources.length" class="mt-6 border-t border-white/10 pt-5 animate-fade-in">
     <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-      Sources
+      Źródła
     </h3>
     <div class="flex flex-wrap gap-2">
       <span

@@ -32,8 +32,8 @@ const statusStyles = {
       DocuMind AI
     </h1>
     <p class="mx-auto mt-3 max-w-lg text-base text-slate-400 sm:text-lg">
-      Ask questions about your documents. Answers are grounded in your Chroma
-      knowledge base powered by Gemini.
+      Zadawaj pytania o swoje dokumenty. Odpowiedzi opierają się na bazie Chroma
+      zasilanej przez Gemini.
     </p>
 
     <div
