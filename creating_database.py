@@ -1,7 +1,7 @@
 import os
 import shutil
 from dotenv import load_dotenv
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain_community.vectorstores import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -20,8 +20,8 @@ def main():
         shutil.rmtree(CHROMA_PATH)
 
     # 2. Wczytujemy wszystkie pliki tekstowe z folderu 'data'
-    print("Wczytywanie dokumentów...")
-    loader = DirectoryLoader(DATA_PATH, glob="*.md", loader_cls=TextLoader)
+    print("Loading PDF documents...")
+    loader = DirectoryLoader(DATA_PATH, glob="*.pdf", loader_cls=PyPDFLoader)
     documents = loader.load()
 
     # 3. Tniemy tekst na mniejsze kawałki (tzw. chunki)
