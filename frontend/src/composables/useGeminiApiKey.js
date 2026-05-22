@@ -1,11 +1,22 @@
 import { ref } from "vue";
 
-const STORAGE_KEY = "documind_gemini_api_key";
+const STORAGE_KEY = "nutrimind_gemini_api_key";
+const LEGACY_STORAGE_KEY = "documind_gemini_api_key";
 const SAVE_FEEDBACK_MS = 2000;
 
 export function getGeminiApiKey() {
   try {
-    return localStorage.getItem(STORAGE_KEY) || "";
+    const current = localStorage.getItem(STORAGE_KEY);
+    if (current) return current;
+
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy) {
+      localStorage.setItem(STORAGE_KEY, legacy);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      return legacy;
+    }
+
+    return "";
   } catch {
     return "";
   }
