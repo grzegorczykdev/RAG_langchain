@@ -8,7 +8,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmb
 load_dotenv()
 
 CHROMA_PATH = "chroma"
-RELEVANCE_THRESHOLD = 0.1
+RELEVANCE_THRESHOLD = 0.5
 TOP_K = 3
 
 PROMPT_TEMPLATE = """
