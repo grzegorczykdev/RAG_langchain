@@ -28,7 +28,11 @@ def _format_source(source: str | None) -> str:
     return os.path.basename(source)
 
 
-def query_documents(question: str) -> dict[str, list[str] | str]:
+def query_documents(
+    question: str,
+    *,
+    gemini_api_key: str | None = None,
+) -> dict[str, list[str] | str]:
     """Run RAG query and return answer with source filenames."""
     question = question.strip()
     if not question:
@@ -37,7 +41,17 @@ def query_documents(question: str) -> dict[str, list[str] | str]:
             "sources": [],
         }
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")
+    api_key = gemini_api_key or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return {
+            "answer": "No Gemini API key provided.",
+            "sources": [],
+        }
+
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="gemini-embedding-001",
+        google_api_key=api_key,
+    )
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embeddings)
 
     results = db.similarity_search_with_relevance_scores(question, k=TOP_K)
@@ -53,7 +67,10 @@ def query_documents(question: str) -> dict[str, list[str] | str]:
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=question)
 
-    model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+    model = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        google_api_key=api_key,
+    )
     response = model.invoke(prompt)
     response_text = response.content if hasattr(response, "content") else str(response)
 
