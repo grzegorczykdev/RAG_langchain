@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { Send, Loader2, MessageCircle } from "lucide-vue-next";
+import { MessageCircle } from "lucide-vue-next";
 
 defineProps({
   loading: { type: Boolean, default: false },
@@ -63,8 +63,6 @@ function onKeydown(event) {
         :disabled="loading || disabled || !question.trim()"
         @click="handleSubmit"
       >
-        <Loader2 v-if="loading" class="h-5 w-5 animate-spin" aria-hidden="true" />
-        <Send v-else class="h-5 w-5" aria-hidden="true" />
         {{ loading ? "Analizuję…" : "Zapytaj eksperta" }}
       </button>
     </div>

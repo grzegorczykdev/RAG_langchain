@@ -1,5 +1,5 @@
 <script setup>
-import { Apple, Pill, Scale, Sparkles } from "lucide-vue-next";
+import { Apple, Pill, Scale } from "lucide-vue-next";
 
 const tips = [
   {
@@ -40,12 +40,6 @@ const accentMap = {
     class="mx-auto w-full max-w-3xl animate-fade-in text-center"
     aria-label="Wprowadzenie"
   >
-    <div
-      class="health-card mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-card-lg p-0 shadow-soft"
-    >
-      <Sparkles class="h-8 w-8 text-primary-600" aria-hidden="true" />
-    </div>
-
     <h2 class="font-display text-xl font-semibold text-surface-900 sm:text-2xl">
       Rozpocznij konsultację z bazą wiedzy
     </h2>
