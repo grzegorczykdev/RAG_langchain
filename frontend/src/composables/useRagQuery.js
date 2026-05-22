@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { apiUrl } from "../config/api.js";
+import { apiUrl, isApiBaseConfigured } from "../config/api.js";
 import { getGeminiApiKey } from "./useGeminiApiKey.js";
 
 export function useRagQuery() {
@@ -11,6 +11,13 @@ export function useRagQuery() {
   const statusMessage = ref("Sprawdzanie połączenia…");
 
   async function checkHealth() {
+    if (!isApiBaseConfigured) {
+      apiStatus.value = "offline";
+      statusMessage.value =
+        "Brak VITE_API_BASE_URL — ustaw zmienną w Netlify i przebuduj stronę";
+      return;
+    }
+
     try {
       const res = await fetch(apiUrl("/api/health"));
       if (!res.ok) throw new Error("Sprawdzanie stanu nie powiodło się");
@@ -24,6 +31,12 @@ export function useRagQuery() {
   }
 
   async function askQuestion(question) {
+    if (!isApiBaseConfigured) {
+      error.value =
+        "Brak VITE_API_BASE_URL w buildzie produkcyjnym. Ustaw zmienną w Netlify i wykonaj ponowny deploy.";
+      return;
+    }
+
     const apiKey = getGeminiApiKey();
     if (!apiKey) {
       error.value =
