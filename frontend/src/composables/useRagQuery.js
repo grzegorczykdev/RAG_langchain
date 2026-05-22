@@ -19,7 +19,7 @@ export function useRagQuery() {
   const answer = ref("");
   const sources = ref([]);
   const apiStatus = ref("checking");
-  const statusMessage = ref("Sprawdzanie połączenia…");
+  const statusMessage = ref("Łączenie z bazą danych…");
 
   async function checkHealth() {
     if (!isApiBaseConfigured) {
