@@ -1,7 +1,7 @@
 import os
 import sys
 from dotenv import load_dotenv
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
@@ -99,7 +99,7 @@ def main():
     if len(sys.argv) < 2:
         print(
             "Błąd: podaj pytanie jako argument. "
-            "Przykład: python query_data.py \"Jakie są normy białka?\""
+            'Przykład: python query_data.py "Jakie są normy białka?"'
         )
         return
 
