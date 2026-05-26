@@ -50,8 +50,26 @@ class QueryResult(TypedDict):
     sources: list[str]
 
 
+class QueryResultWithContexts(TypedDict):
+    answer: str
+    sources: list[str]
+    contexts: list[str]
+
+
 def _result(answer: str, sources: list[str] | None = None) -> QueryResult:
     return {"answer": answer, "sources": sources or []}
+
+
+def _result_with_contexts(
+    answer: str,
+    sources: list[str] | None = None,
+    contexts: list[str] | None = None,
+) -> QueryResultWithContexts:
+    return {
+        "answer": answer,
+        "sources": sources or [],
+        "contexts": contexts or [],
+    }
 
 
 def _format_source(source: str | None) -> str:
@@ -70,20 +88,11 @@ def _extract_content(response: object) -> str:
     return content if isinstance(content, str) else str(response)
 
 
-def query_documents(
+def _run_rag_pipeline(
     question: str,
-    *,
-    gemini_api_key: str | None = None,
-) -> QueryResult:
-    """Wykonuje zapytanie RAG i zwraca odpowiedź oraz listę plików źródłowych."""
-    question = question.strip()
-    if not question:
-        return _result(MSG_EMPTY_QUESTION)
-
-    api_key = _resolve_api_key(gemini_api_key)
-    if not api_key:
-        return _result(MSG_MISSING_API_KEY)
-
+    api_key: str,
+) -> QueryResultWithContexts:
+    """Core retrieval + generation path shared by production and evaluation callers."""
     embeddings = GoogleGenerativeAIEmbeddings(
         model=GEMINI_EMBEDDING_MODEL,
         google_api_key=api_key,
@@ -92,9 +101,10 @@ def query_documents(
     results = db.similarity_search_with_relevance_scores(question, k=TOP_K)
 
     if not results or results[0][1] < RELEVANCE_THRESHOLD:
-        return _result(MSG_NO_MATCH)
+        return _result_with_contexts(MSG_NO_MATCH)
 
-    context_text = "\n\n---\n\n".join(doc.page_content for doc, _ in results)
+    contexts = [doc.page_content for doc, _ in results]
+    context_text = "\n\n---\n\n".join(contexts)
     prompt = CHAT_PROMPT.format(context=context_text, question=question)
 
     model = ChatGoogleGenerativeAI(
@@ -102,10 +112,47 @@ def query_documents(
         google_api_key=api_key,
     )
     response_text = _extract_content(model.invoke(prompt))
-
     sources = sorted({_format_source(doc.metadata.get("source")) for doc, _ in results})
 
-    return _result(response_text, sources)
+    return _result_with_contexts(response_text, sources, contexts)
+
+
+def query_documents(
+    question: str,
+    *,
+    gemini_api_key: str | None = None,
+) -> QueryResult:
+    """Run RAG query and return the generated answer plus source filenames."""
+    question = question.strip()
+    if not question:
+        return _result(MSG_EMPTY_QUESTION)
+
+    api_key = _resolve_api_key(gemini_api_key)
+    if not api_key:
+        return _result(MSG_MISSING_API_KEY)
+
+    full = _run_rag_pipeline(question, api_key)
+    return {"answer": full["answer"], "sources": full["sources"]}
+
+
+def query_documents_with_contexts(
+    question: str,
+    *,
+    gemini_api_key: str | None = None,
+) -> QueryResultWithContexts:
+    """
+    Run RAG query and return answer, source filenames, and retrieved context chunks.
+    Intended for offline evaluation (e.g. Ragas) without changing the public API shape.
+    """
+    question = question.strip()
+    if not question:
+        return _result_with_contexts(MSG_EMPTY_QUESTION)
+
+    api_key = _resolve_api_key(gemini_api_key)
+    if not api_key:
+        return _result_with_contexts(MSG_MISSING_API_KEY)
+
+    return _run_rag_pipeline(question, api_key)
 
 
 def main() -> None:

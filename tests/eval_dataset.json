@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Jakie są źródła witaminy C?",
+    "ground_truth": "Źródłem witaminy C są przede wszystkim warzywa i owoce. Duże ilości tej witaminy znajdują się w natce pietruszki, czarnych porzeczkach, owocach kiwi, czerwonej papryce, warzywach kapustnych, truskawkach, owocach cytrusowych."
+  },
+  {
+    "question": "Do czego mogą przyczyniać się niedobory witaminy C?",
+    "ground_truth": "Niedobory witaminy C mogą przyczyniać się do rozwoju niedokrwistości w wyniku niedostatecznego wchłaniania żelaza. Sugeruje się, iż niedobory witaminy C mogą przyczyniać się do zwiększenia ryzyka rozwoju nowotworów."
+  }
+]

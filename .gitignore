@@ -5,3 +5,6 @@ chroma/
 frontend/node_modules/
 frontend/dist/
 .DS_Store
+
+# Ragas evaluation reports (generated locally)
+tests/*.csv
